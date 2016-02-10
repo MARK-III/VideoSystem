@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -7,26 +8,40 @@ using YoutubeExtractor;
 using System.IO;
 using System.Net;
 using Newtonsoft.Json.Linq;
-using System.Threading.Tasks;
 
 namespace Y2Y
 {
+    public static class config
+    {
+        public static string workDirectory = "d:/视频";
+        public static string channelId = "UCUBmdNqlY5YGSPIDpRAz3WA";
+        public static string playlistId = "PLXs35j9aQ_b7J6eYxIeH9OgiICVTmePEi";
+        public static string key = "AIzaSyBQDGJGC1R28k4Bj7UUi2dKanJqJ0g4IYo";
+        public static int maxThreads = 1;
+    }
     class Program
     {
         static void Main(string[] args)
         {
-            string channelId = "UCpbB8LHOqFkHU3C22r_BJLQ";
-            string key = "AIzaSyBQDGJGC1R28k4Bj7UUi2dKanJqJ0g4IYo";
-            youtubeSearcher alpha = new youtubeSearcher();
-            string[] idList = alpha.searchChannel(channelId, key);
-            Parallel.ForEach(idList, new ParallelOptions { MaxDegreeOfParallelism = 4 }, (id1) =>
+            StreamReader downloadFile = new StreamReader(Path.Combine(config.workDirectory, "video_download.txt"));
+            ArrayList downloadList = new ArrayList();
+            string line;
+            while ((line = downloadFile.ReadLine()) != null)
             {
-                video LingLing = new video(id1);
-                LingLing.download();
+                downloadList.Add(line);
+            }
+            downloadFile.Close();
 
-                StreamWriter file = new StreamWriter("C:/Data/BZINGGA/Y2Y/video_download.txt",true);
-                file.WriteLine(id1 + "|" + LingLing.Name);
-                file.Close();
+            youtubeSearcher alpha = new youtubeSearcher();
+            string[] idList = alpha.searchPlaylist(config.playlistId, config.key);
+
+            Parallel.ForEach(idList, new ParallelOptions { MaxDegreeOfParallelism = config.maxThreads }, (id) =>
+            {
+                if (!( downloadList.Contains(id)))
+                {
+                    video mine = new video(id);
+                    mine.download();
+                }
             });
         }
     }

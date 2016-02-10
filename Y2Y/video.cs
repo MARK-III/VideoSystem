@@ -29,7 +29,7 @@ namespace Y2Y
             get { return name; }
         }
         private string linkBase = "https://www.youtube.com/watch?v=";
-        int maxRetryValue = 3;
+        int maxRetryValue = 2;
         public int maxRetry
         {
             get { return this.maxRetryValue; }
@@ -38,24 +38,26 @@ namespace Y2Y
         public void download()
         {  
             string link = linkBase + id;
-            //Console.WriteLine(link);
             IEnumerable<YoutubeExtractor.VideoInfo> videoInfos = YoutubeExtractor.DownloadUrlResolver.GetDownloadUrls(link);
             VideoInfo video = videoInfos.First(info => info.VideoType == VideoType.Mp4 && info.Resolution == 360);
             if (video.RequiresDecryption)
             {
                 DownloadUrlResolver.DecryptDownloadUrl(video);
             }
-            name = video.Title;
-            //var videoDownloader = new VideoDownloader(video, Path.Combine("C:/Data/BZINGGA/Y2Y", video.Title + video.VideoExtension));
-            var videoDownloader = new VideoDownloader(video, Path.Combine("C:/Data/BZINGGA/Y2Y", id + video.VideoExtension));
+            name = video.Title.Trim(new Char[] { '<', '>', ':', '"', '/', '\\', '|', '?', '*' });
+            var videoDownloader = new VideoDownloader(video, Path.Combine(config.workDirectory, name + video.VideoExtension));
             //videoDownloader.DownloadProgressChanged += (sender, args) => Console.WriteLine(args.ProgressPercentage);
             try
             {
-                Console.WriteLine("Trying to download: " + id);
+                Console.WriteLine("Trying to download: " + name);
                 videoDownloader.Execute();
+                StreamWriter file = new StreamWriter(Path.Combine(config.workDirectory, "video_download.txt"), true);
+                file.WriteLine(id);
+                file.Close();
             }
             catch (Exception ex)
             {
+                Console.WriteLine(ex);
                 if (maxRetry > 0)
                 {
                     maxRetry--;
@@ -63,7 +65,7 @@ namespace Y2Y
                 }
                 else
                 {
-                    Console.WriteLine("Video download failed:" + id);
+                    Console.WriteLine("*Video download failed:" + id);
                 }
             }
         }
