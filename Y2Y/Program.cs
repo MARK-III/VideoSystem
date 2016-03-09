@@ -17,7 +17,7 @@ namespace Y2Y
         public static string channelId = "UCUBmdNqlY5YGSPIDpRAz3WA";
         public static string playlistId = "PLXs35j9aQ_b7J6eYxIeH9OgiICVTmePEi";
         public static string key = "AIzaSyBQDGJGC1R28k4Bj7UUi2dKanJqJ0g4IYo";
-        public static int maxThreads = 1;
+        public static int maxThreads = 3;
     }
     class Program
     {
